@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="500"
+   height="268"
+   id="svg2"
+   version="1.1"
+   inkscape:version="0.48.4 r9939"
+   inkscape:export-filename="D:\c\KTANE\OnlyConnect\Assets\Misc\HieroglyphTwoReeds.png"
+   inkscape:export-xdpi="90"
+   inkscape:export-ydpi="90"
+   sodipodi:docname="HieroglyphTwoReeds.svg">
+  <defs
+     id="defs3004" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#000000"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.49019608"
+     inkscape:pageshadow="2"
+     inkscape:zoom="3.42"
+     inkscape:cx="197.66082"
+     inkscape:cy="134"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="true" />
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(0,-784.36217)">
+    <path
+       id="path2998-1"
+       style="fill:none;stroke:#ffffff;stroke-width:8;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       d="M 309.05686,1020.008 C 308.68703,897.96649 305.73969,808.94909 280.95035,811.42803 269.85567,812.5375 270.59532,895.00791 271.70479,940.49607 293.70922,953.9946 306.13806,972.21456 309.10309,988.89659 313.67964,1014.6455 309.05686,1020.008 309.05686,1020.008 z M 233.35799,1020.0079 C 232.98816,897.96651 230.04082,808.94912 205.25148,811.42806 194.1568,812.53752 194.89645,895.00793 196.00592,940.49609 218.01035,953.99462 230.43919,972.21458 233.40422,988.89661 237.98077,1014.6455 233.35799,1020.0079 233.35799,1020.0079 z" />
+  </g>
+</svg>
