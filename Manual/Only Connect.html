@@ -1,34 +1,163 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html class="no-js">
 <head>
-    <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-    <meta content="IE=edge" http-equiv="X-UA-Compatible">
-    <title>Only Connect — Keep Talking and Nobody Explodes Module</title>
-    <meta content="initial-scale=1" name="viewport">
-    <link href='//fonts.googleapis.com/css?family=Special+Elite' rel='stylesheet' type='text/css'>
-    <link href="css/normalize.css" rel="stylesheet" type="text/css">
-    <link href="css/main.css" rel="stylesheet" type="text/css">
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>Only Connect — Keep Talking and Nobody Explodes Module</title>
+	<meta name="viewport" content="initial-scale=1">
+	<link href='https://fonts.googleapis.com/css?family=Special+Elite' rel='stylesheet' type='text/css'>
+	<link rel="stylesheet" type="text/css" href="css/normalize.css">
+	<link rel="stylesheet" type="text/css" href="css/main.css">
+	<script src='js/highlighter.js'></script>
     <style>
+        .only-connect {
+            width: 100%;
+        }
+        td.letters {
+            font-family: 'Georgia', serif;
+            font-size: 15pt;
+            background: white;
+        }
     </style>
 </head>
 <body>
-    <div id="ManualContent">
-        <div class="section">
-            <div class="page">
-                <div class="page-header">
-                    <span class="page-header-doc-title">Keep Talking and Nobody Explodes Mod</span>
-                    <span class="page-header-section-title">Only Connect</span>
-                </div>
-                <div class="page-content">
-                    <img class="diagram" src="img/Only Connect.svg">
-                    <h2>On the Subject of Only Connect</h2>
+<div class="section">
+    <div class="page page-bg-04">
+        <div class="page-header">
+			<span class="page-header-doc-title">Keep Talking and Nobody Explodes Mod</span>
+			<span class="page-header-section-title">Only Connect</span>
+		</div>
+		<div class="page-content">
+            <img src="img/Component/Only Connect.svg" class="diagram">
+            <h2>On the Subject of Only Connect</h2>
+            <p class="flavour-text">Greek letters are too pretentious, so we use Egyptian hieroglyphs.
 
-                    <p class="flavour-text">(flavour text)
+            <h3>Round 1: Egyptian Hieroglyphs</h3>
+            <ul>
+                <li>The module displays the six familiar Egyptian hieroglyphs in a 3×2 arrangement,
+                    and a team name.
+                <li>Determine how many of the following criteria are met by each of the Egyptian hieroglyphs.
+                <li>Select the Egyptian hieroglyph that meets a number of criteria different from any other
+                    Egyptian hieroglyph.
+                <li>Criterion #1 is met if the Egyptian hieroglyph is in the specified location.
+                <li>Criterion #2 is met if the specified place in the serial number occurs in the team name.
+                    If the place is a digit, convert it to a letter (0=Z,&nbsp;1=A, 2=B,&nbsp;...,&nbsp;9=I).
+                <li>Criterion #3 is met if the bomb has at least one of the specified port.
+            </ul>
 
-                </div>
-                <div class="page-footer relative-footer">Page 1 of 1</div>
-            </div>
-        </div>
-    </div>
-</body>
-</html>
+            <table class='only-connect'>
+                <tr>
+                    <th>Criterion
+                    <th>Two Reeds<th>Lion<th>Twisted Flax
+                    <th>Horned Viper<th>Water<th>Eye of Horus
+                </tr>
+                <tr>
+                    <th>#1
+                    <td>top left<td>top middle<td>top right
+                    <td>bottom left<td>bottom middle<td>bottom right
+                </tr>
+                <tr>
+                    <th>#2
+                    <td>first<td>second<td>third
+                    <td>fourth<td>fifth<td>sixth
+                </tr>
+                <tr>
+                    <th>#3
+                    <td>PS/2<td>Parallel<td>RJ-45
+                    <td>Stereo RCA<td>Serial<td>DVI-D
+                </tr>
+            </table>
+
+            <!--
+            var hieroglyphs = "Two Reeds|Lion|Twisted Flax|Horned Viper|Water|Eye of Horus".Split('|');
+            var hieroglyphsDisplayed = hieroglyphs.ToArray();
+            var teams = File.ReadAllLines(@"D:\Temp\Only Connect teams.txt");
+            var serial = GenerateSerialNumber();
+            var serialProc = serial.Select(ch => ch == '0' ? 'Z' : ch >= '1' && ch <= '9' ? (char) (ch - '1' + 'A') : ch).JoinString();
+            var hasPorts = Ut.NewArray(6, _ => Rnd.Next(0, 2) == 0);
+            var retries = 0;
+
+            retry:
+            hieroglyphsDisplayed.Shuffle();
+            var team = teams[Rnd.Next(teams.Length)];
+
+            var matches = new int[6];
+            for (int i = 0; i < 6; i++)
+            {
+                if (hieroglyphsDisplayed[i] == hieroglyphs[i])
+                    matches[i]++;
+                if (team.ToUpperInvariant().Contains(serialProc[i]))
+                    matches[i]++;
+                if (hasPorts[i])
+                    matches[i]++;
+            }
+
+            var unique = Ut.NewArray(4, c => matches.Count(i => i == c) == 1);
+            if (unique.Count(c => c) != 1)
+            {
+                retries++;
+                goto retry;
+            }
+
+            Console.WriteLine($"Team: {team}");
+            Console.WriteLine($"Serial: {serial} = {serialProc}");
+            Console.WriteLine();
+            var tt = new TextTable { ColumnSpacing = 2 };
+            for (int i = 0; i < 6; i++)
+            {
+                tt.SetCell(0, i, hieroglyphsDisplayed[i]);
+                tt.SetCell(1, i, $"port={hasPorts[i]}");
+                tt.SetCell(2, i, $"serial={team.ToUpperInvariant().Contains(serialProc[i])}");
+                tt.SetCell(3, i, matches[i].ToString(), alignment: HorizontalTextAlignment.Right);
+            }
+            tt.WriteToConsole();
+            Console.WriteLine();
+            Console.WriteLine($"{retries} retries.");
+
+            -->
+
+		</div>
+        <div class="page-footer relative-footer">Page 1 of 2</div>
+	</div>
+    <div class="page page-bg-04">
+        <div class="page-header">
+			<span class="page-header-doc-title">Keep Talking and Nobody Explodes Mod</span>
+			<span class="page-header-section-title">Only Connect</span>
+		</div>
+		<div class="page-content">
+            <h3>Round 2: Connecting Wall</h3>
+            <ul>
+                <li>The module displays a jumbled-up grid of 16 letters.
+                <li>Group the 16 letters into 4 groups of 4, such that each group contains letters from the same language.
+            </ul>
+
+            <table class='only-connect-wall'>
+                <tr><th>Language<th>Non-English letters used by this language<th>English letters not used by this language</tr>
+                <tr><th>Azeri<td class='letters'>ç ö ü ğ ı ş ə<td class='letters'>w</tr>
+                <tr><th>Catalan<td class='letters'>à ç è é í ï ò ó ú ü<td class='letters'></tr>
+                <tr><th>Croatian<td class='letters'>ć č đ š ž<td class='letters'>q w x y</tr>
+                <tr><th>Czech<td class='letters'>á é í ó ú ý č ď ě ň ř š ť ů ž<td class='letters'></tr>
+                <tr><th>Danish<td class='letters'>å æ ø<td class='letters'></tr>
+                <tr><th>Esperanto<td class='letters'>ĉ ĝ ĥ ĵ ŝ ŭ<td class='letters'>q w x y</tr>
+                <tr><th>Estonian<td class='letters'>ä õ ö ü š ž<td class='letters'>w x y</tr>
+                <tr><th>Finnish<td class='letters'>ä ö<td class='letters'>b c f q w x z</tr>
+                <tr><th>French<td class='letters'>à â ä æ ç è é ê ë î ï ô ö ù û ü ÿ œ<td class='letters'></tr>
+                <tr><th>German<td class='letters'>ß ä ö ü<td class='letters'></tr>
+                <tr><th>Hungarian<td class='letters'>á é í ó ö ú ü ő ű<td class='letters'></tr>
+                <tr><th>Icelandic<td class='letters'>á æ é í ð ó ö ú ý þ<td class='letters'>c q w z</tr>
+                <tr><th>Latvian<td class='letters'>ā č ē ģ ī ķ ļ ņ š ū ž<td class='letters'>q w x y</tr>
+                <tr><th>Lithuanian<td class='letters'>ą č ė ę į š ū ų ž<td class='letters'>q w x</tr>
+                <tr><th>Polish<td class='letters'>ó ą ć ę ł ń ś ź ż<td class='letters'>q v x</tr>
+                <tr><th>Portuguese<td class='letters'>à á â ã ç é ê í ó ô õ ú ü<td class='letters'>k w y</tr>
+                <tr><th>Romanian<td class='letters'>â î ă ș ț<td class='letters'></tr>
+                <tr><th>Spanish<td class='letters'>á é í ñ ó ú ü<td class='letters'></tr>
+                <tr><th>Swedish<td class='letters'>ä å ö<td class='letters'>q z</tr>
+                <tr><th>Turkish<td class='letters'>ç ö ü ğ ı ş<td class='letters'>q w x</tr>
+                <tr><th>Welsh<td class='letters'>ŵ ŷ<td class='letters'>k q v x z</tr>
+            </table>
+
+		</div>
+        <div class="page-footer relative-footer">Page 2 of 2</div>
+	</div>
+</div>
+</body></html>
