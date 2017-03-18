@@ -22,7 +22,7 @@
 </head>
 <body>
 <div class="section">
-    <div class="page page-bg-04">
+    <div class="page page-bg-03">
         <div class="page-header">
 			<span class="page-header-doc-title">Keep Talking and Nobody Explodes Mod</span>
 			<span class="page-header-section-title">Only Connect</span>
@@ -31,6 +31,8 @@
             <img src="img/Component/Only Connect.svg" class="diagram">
             <h2>On the Subject of Only Connect</h2>
             <p class="flavour-text">Greek letters are too pretentious, so we use Egyptian hieroglyphs.
+
+            <p>This module consists of two rounds.
 
             <h3>Round 1: Egyptian Hieroglyphs</h3>
             <ul>
@@ -68,54 +70,6 @@
                 </tr>
             </table>
 
-            <!--
-            var hieroglyphs = "Two Reeds|Lion|Twisted Flax|Horned Viper|Water|Eye of Horus".Split('|');
-            var hieroglyphsDisplayed = hieroglyphs.ToArray();
-            var teams = File.ReadAllLines(@"D:\Temp\Only Connect teams.txt");
-            var serial = GenerateSerialNumber();
-            var serialProc = serial.Select(ch => ch == '0' ? 'Z' : ch >= '1' && ch <= '9' ? (char) (ch - '1' + 'A') : ch).JoinString();
-            var hasPorts = Ut.NewArray(6, _ => Rnd.Next(0, 2) == 0);
-            var retries = 0;
-
-            retry:
-            hieroglyphsDisplayed.Shuffle();
-            var team = teams[Rnd.Next(teams.Length)];
-
-            var matches = new int[6];
-            for (int i = 0; i < 6; i++)
-            {
-                if (hieroglyphsDisplayed[i] == hieroglyphs[i])
-                    matches[i]++;
-                if (team.ToUpperInvariant().Contains(serialProc[i]))
-                    matches[i]++;
-                if (hasPorts[i])
-                    matches[i]++;
-            }
-
-            var unique = Ut.NewArray(4, c => matches.Count(i => i == c) == 1);
-            if (unique.Count(c => c) != 1)
-            {
-                retries++;
-                goto retry;
-            }
-
-            Console.WriteLine($"Team: {team}");
-            Console.WriteLine($"Serial: {serial} = {serialProc}");
-            Console.WriteLine();
-            var tt = new TextTable { ColumnSpacing = 2 };
-            for (int i = 0; i < 6; i++)
-            {
-                tt.SetCell(0, i, hieroglyphsDisplayed[i]);
-                tt.SetCell(1, i, $"port={hasPorts[i]}");
-                tt.SetCell(2, i, $"serial={team.ToUpperInvariant().Contains(serialProc[i])}");
-                tt.SetCell(3, i, matches[i].ToString(), alignment: HorizontalTextAlignment.Right);
-            }
-            tt.WriteToConsole();
-            Console.WriteLine();
-            Console.WriteLine($"{retries} retries.");
-
-            -->
-
 		</div>
         <div class="page-footer relative-footer">Page 1 of 2</div>
 	</div>
@@ -129,11 +83,12 @@
             <ul>
                 <li>The module displays a jumbled-up grid of 16 letters.
                 <li>Group the 16 letters into 4 groups of 4, such that each group contains letters from the same language.
+                    There is only one solution.
             </ul>
 
             <table class='only-connect-wall'>
                 <tr><th>Language<th>Non-English letters used by this language<th>English letters not used by this language</tr>
-                <tr><th>Azeri<td class='letters'>ç ö ü ğ ı ş ə<td class='letters'>w</tr>
+                <!-- tr><th>Azeri<td class='letters'>ç ö ü ğ ı ş ə<td class='letters'>w</tr -->
                 <tr><th>Catalan<td class='letters'>à ç è é í ï ò ó ú ü<td class='letters'></tr>
                 <tr><th>Croatian<td class='letters'>ć č đ š ž<td class='letters'>q w x y</tr>
                 <tr><th>Czech<td class='letters'>á é í ó ú ý č ď ě ň ř š ť ů ž<td class='letters'></tr>
