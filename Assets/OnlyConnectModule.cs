@@ -358,7 +358,8 @@ public class OnlyConnectModule : MonoBehaviour
                 return new { Button = sel, Character = ch, Text = textMesh, Renderer = renderer };
             }).ToArray();
 
-            StartCoroutine(MoveButtons(buttons.Select(b => b.Button).ToArray(), Enumerable.Range(0, 16).ToArray(), randomUpPosition: true));
+            var btns = buttons.Select(b => b.Button).ToArray();
+            StartCoroutine(MoveButtons(btns, Enumerable.Range(0, 16).ToArray(), btns, randomUpPosition: true));
 
             foreach (var inf_FE in buttons)
             {
@@ -391,10 +392,10 @@ public class OnlyConnectModule : MonoBehaviour
                                 // User selected a wrong group: give a strike and reset the selected buttons
                                 Debug.LogFormat(@"[Only Connect #{0}] Submitted incorrect group: {1}", _moduleId, curSelectedGroup.JoinString(", "));
                                 Module.HandleStrike();
-                                var btns = buttons.Where(inf2 => curSelectedGroup.Contains(inf2.Character)).ToArray();
+                                var btns2 = buttons.Where(inf2 => curSelectedGroup.Contains(inf2.Character)).ToArray();
                                 StartCoroutine(ResetButtons(delegate
                                 {
-                                    foreach (var inf2 in btns)
+                                    foreach (var inf2 in btns2)
                                         if (!curSelectedGroup.Contains(inf2.Character))
                                         {
                                             inf2.Renderer.material = ButtonBackground;
@@ -428,7 +429,7 @@ public class OnlyConnectModule : MonoBehaviour
                                     Module.HandlePass();
                                 }
 
-                                StartCoroutine(MoveButtons(buttons.Select(b => b.Button).ToArray(), curSelectedGroup.Select(ch => buttons.IndexOf(b => b.Character == ch)).ToArray()));
+                                StartCoroutine(MoveButtons(buttons.Select(b => b.Button).ToArray(), curSelectedGroup.Select(ch => buttons.IndexOf(b => b.Character == ch)).ToArray(), buttons.Select(b => b.Button).Skip(4 * numSolvedGroups).ToArray()));
                             }
                             curSelectedGroup.Clear();
                         }
@@ -493,11 +494,11 @@ public class OnlyConnectModule : MonoBehaviour
         ComponentRenderer.material = ComponentBackgroundStage2;
     }
 
-    private IEnumerator MoveButtons(KMSelectable[] buttons, int[] mustMove, bool randomUpPosition = false)
+    private IEnumerator MoveButtons(KMSelectable[] buttons, int[] mustMove, KMSelectable[] newChildren, bool randomUpPosition = false)
     {
         const float dx = .0375f;
         const float dy = .0225f;
-        const float howFarUp = .03f;
+        const float howFarUp = .02f;
 
         var infs = buttons.Select((b, i) =>
         {
@@ -507,51 +508,41 @@ public class OnlyConnectModule : MonoBehaviour
             {
                 Button = b,
                 OldPos = oldPos,
-                OldPosUp = randomUpPosition ? new Vector3(Rnd.Range(-.05f, .05f), howFarUp, Rnd.Range(-.025f, .035f)) : new Vector3(oldPos.x, howFarUp, oldPos.z),
+                OldPosUp = randomUpPosition ? new Vector3(Rnd.Range(-.05f, .05f), howFarUp, Rnd.Range(-.025f, .035f)) : mustMove.Contains(i) ? new Vector3(oldPos.x, howFarUp, oldPos.z) : new Vector3(oldPos.x, howFarUp / 2, oldPos.z),
                 NewPos = newPos,
-                NewPosUp = new Vector3(newPos.x, howFarUp, newPos.z),
                 ShouldMove = newPos != oldPos || mustMove.Contains(i),
                 MustMove = mustMove.Contains(i)
             };
         }).ToArray();
 
         // Move towards camera
-        const int steps1 = 10;
+        const int steps1 = 20;
         for (int i = 0; i <= steps1; i++)
         {
             foreach (var inf in infs)
-                if (inf.MustMove)
+                if (inf.ShouldMove)
                     inf.Button.transform.localPosition = Vector3.Lerp(inf.OldPos, inf.OldPosUp, i / (float) steps1);
             yield return null;
         }
 
-        yield return new WaitForSeconds(.3f);
+        yield return new WaitForSeconds(.15f);
         Audio.PlaySoundAtTransform("Woosh", buttons[0].transform);
 
-        // Shuffle around
-        const int steps2 = 20;
-        for (int i = 0; i <= steps2; i++)
-        {
-            foreach (var inf in infs)
-                if (inf.ShouldMove)
-                    inf.Button.transform.localPosition = Vector3.Lerp(inf.OldPosUp, inf.NewPosUp, i / (float) steps2);
-            yield return null;
-        }
-
-        yield return new WaitForSeconds(.05f);
-
         // Move to final position
-        const int steps3 = 25;
+        const int steps3 = 35;
         for (int i = 0; i <= steps3; i++)
         {
             foreach (var inf in infs)
                 if (inf.ShouldMove)
-                    inf.Button.transform.localPosition = Vector3.Lerp(inf.NewPosUp, inf.NewPos, i / (float) steps3);
+                    inf.Button.transform.localPosition = Vector3.Lerp(inf.OldPosUp, inf.NewPos, i / (float) steps3);
             yield return null;
         }
 
         foreach (var inf in infs)
             if (inf.ShouldMove)
                 inf.Button.transform.localPosition = inf.NewPos;
+
+        MainSelectable.Children = newChildren;
+        MainSelectable.UpdateChildren(MainSelectable.Children[0]);
     }
 }
