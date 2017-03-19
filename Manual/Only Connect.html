@@ -17,6 +17,16 @@
             font-family: 'Georgia', serif;
             font-size: 15pt;
             background: white;
+            padding: .1em .3em;
+        }
+        ul.letters {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        ul.letters li.letter {
+            display: inline;
+            padding: .25em;
         }
     </style>
 </head>
@@ -81,34 +91,36 @@
 		<div class="page-content">
             <h3>Round 2: Connecting Wall</h3>
             <ul>
-                <li>The module displays a jumbled-up grid of 16 letters.
-                <li>Group the 16 letters into 4 groups of 4, such that each group contains letters from the same language.
+                <li>The module displays a jumbled-up grid of 9 letters.
+                <li>Group the 9 letters into 3 groups of 3, such that each group contains letters from the same language.
                     There is only one solution.
             </ul>
 
             <table class='only-connect-wall'>
                 <tr><th>Language<th>Non-English letters used by this language<th>English letters not used by this language</tr>
-                <!-- tr><th>Azeri<td class='letters'>ç ö ü ğ ı ş ə<td class='letters'>w</tr -->
-                <tr><th>Catalan<td class='letters'>à ç è é í ï ò ó ú ü<td class='letters'></tr>
-                <tr><th>Croatian<td class='letters'>ć č đ š ž<td class='letters'>q w x y</tr>
-                <tr><th>Czech<td class='letters'>á é í ó ú ý č ď ě ň ř š ť ů ž<td class='letters'></tr>
-                <tr><th>Danish<td class='letters'>å æ ø<td class='letters'></tr>
-                <tr><th>Esperanto<td class='letters'>ĉ ĝ ĥ ĵ ŝ ŭ<td class='letters'>q w x y</tr>
-                <tr><th>Estonian<td class='letters'>ä õ ö ü š ž<td class='letters'>w x y</tr>
-                <tr><th>Finnish<td class='letters'>ä ö<td class='letters'>b c f q w x z</tr>
-                <tr><th>French<td class='letters'>à â ä æ ç è é ê ë î ï ô ö ù û ü ÿ œ<td class='letters'></tr>
-                <tr><th>German<td class='letters'>ß ä ö ü<td class='letters'></tr>
-                <tr><th>Hungarian<td class='letters'>á é í ó ö ú ü ő ű<td class='letters'></tr>
-                <tr><th>Icelandic<td class='letters'>á æ é í ð ó ö ú ý þ<td class='letters'>c q w z</tr>
-                <tr><th>Latvian<td class='letters'>ā č ē ģ ī ķ ļ ņ š ū ž<td class='letters'>q w x y</tr>
-                <tr><th>Lithuanian<td class='letters'>ą č ė ę į š ū ų ž<td class='letters'>q w x</tr>
-                <tr><th>Polish<td class='letters'>ó ą ć ę ł ń ś ź ż<td class='letters'>q v x</tr>
-                <tr><th>Portuguese<td class='letters'>à á â ã ç é ê í ó ô õ ú ü<td class='letters'>k w y</tr>
-                <tr><th>Romanian<td class='letters'>â î ă ș ț<td class='letters'></tr>
-                <tr><th>Spanish<td class='letters'>á é í ñ ó ú ü<td class='letters'></tr>
-                <tr><th>Swedish<td class='letters'>ä å ö<td class='letters'>q z</tr>
-                <tr><th>Turkish<td class='letters'>ç ö ü ğ ı ş<td class='letters'>q w x</tr>
-                <tr><th>Welsh<td class='letters'>ŵ ŷ<td class='letters'>k q v x z</tr>
+                <!--##-->
+                <tr><th>Albanian<td class=letters><ul class=letters><li class=letter>ç<li class=letter>ë</ul><td class=letters><ul class=letters><li class=letter>w</ul>
+                <tr><th>Catalan<td class=letters><ul class=letters><li class=letter>à<li class=letter>ç<li class=letter>é<li class=letter>è<li class=letter>í<li class=letter>ï<li class=letter>ó<li class=letter>ò<li class=letter>ú<li class=letter>ü</ul><td class=letters><ul class=letters></ul>
+                <tr><th>Croatian<td class=letters><ul class=letters><li class=letter>ć<li class=letter>č<li class=letter>đ<li class=letter>š<li class=letter>ž</ul><td class=letters><ul class=letters><li class=letter>q<li class=letter>w<li class=letter>x<li class=letter>y</ul>
+                <tr><th>Czech<td class=letters><ul class=letters><li class=letter>á<li class=letter>č<li class=letter>ď<li class=letter>é<li class=letter>ě<li class=letter>í<li class=letter>ň<li class=letter>ó<li class=letter>ř<li class=letter>š<li class=letter>ť<li class=letter>ú<li class=letter>ů<li class=letter>ý<li class=letter>ž</ul><td class=letters><ul class=letters></ul>
+                <tr><th>Danish<td class=letters><ul class=letters><li class=letter>å<li class=letter>æ<li class=letter>ø</ul><td class=letters><ul class=letters></ul>
+                <tr><th>Esperanto<td class=letters><ul class=letters><li class=letter>ĉ<li class=letter>ĝ<li class=letter>ĥ<li class=letter>ĵ<li class=letter>ŝ<li class=letter>ŭ</ul><td class=letters><ul class=letters><li class=letter>q<li class=letter>w<li class=letter>x<li class=letter>y</ul>
+                <tr><th>Estonian<td class=letters><ul class=letters><li class=letter>ä<li class=letter>ö<li class=letter>õ<li class=letter>š<li class=letter>ü<li class=letter>ž</ul><td class=letters><ul class=letters><li class=letter>w<li class=letter>x<li class=letter>y</ul>
+                <tr><th>Finnish<td class=letters><ul class=letters><li class=letter>ä<li class=letter>ö</ul><td class=letters><ul class=letters><li class=letter>b<li class=letter>c<li class=letter>f<li class=letter>q<li class=letter>w<li class=letter>x<li class=letter>z</ul>
+                <tr><th>French<td class=letters><ul class=letters><li class=letter>à<li class=letter>â<li class=letter>ä<li class=letter>æ<li class=letter>ç<li class=letter>é<li class=letter>è<li class=letter>ê<li class=letter>ë<li class=letter>î<li class=letter>ï<li class=letter>ô<li class=letter>ö<li class=letter>œ<li class=letter>ù<li class=letter>û<li class=letter>ü<li class=letter>ÿ</ul><td class=letters><ul class=letters></ul>
+                <tr><th>German<td class=letters><ul class=letters><li class=letter>ä<li class=letter>ö<li class=letter>ß<li class=letter>ü</ul><td class=letters><ul class=letters></ul>
+                <tr><th>Hungarian<td class=letters><ul class=letters><li class=letter>á<li class=letter>é<li class=letter>í<li class=letter>ó<li class=letter>ö<li class=letter>ő<li class=letter>ú<li class=letter>ü<li class=letter>ű</ul><td class=letters><ul class=letters></ul>
+                <tr><th>Icelandic<td class=letters><ul class=letters><li class=letter>á<li class=letter>æ<li class=letter>ð<li class=letter>é<li class=letter>í<li class=letter>ó<li class=letter>ö<li class=letter>þ<li class=letter>ú<li class=letter>ý</ul><td class=letters><ul class=letters><li class=letter>c<li class=letter>q<li class=letter>w<li class=letter>z</ul>
+                <tr><th>Latvian<td class=letters><ul class=letters><li class=letter>ā<li class=letter>č<li class=letter>ē<li class=letter>ģ<li class=letter>ī<li class=letter>ķ<li class=letter>ļ<li class=letter>ņ<li class=letter>š<li class=letter>ū<li class=letter>ž</ul><td class=letters><ul class=letters><li class=letter>q<li class=letter>w<li class=letter>x<li class=letter>y</ul>
+                <tr><th>Lithuanian<td class=letters><ul class=letters><li class=letter>ą<li class=letter>č<li class=letter>ė<li class=letter>ę<li class=letter>į<li class=letter>š<li class=letter>ū<li class=letter>ų<li class=letter>ž</ul><td class=letters><ul class=letters><li class=letter>q<li class=letter>w<li class=letter>x</ul>
+                <tr><th>Polish<td class=letters><ul class=letters><li class=letter>ą<li class=letter>ć<li class=letter>ę<li class=letter>ł<li class=letter>ń<li class=letter>ó<li class=letter>ś<li class=letter>ź<li class=letter>ż</ul><td class=letters><ul class=letters><li class=letter>q<li class=letter>v<li class=letter>x</ul>
+                <tr><th>Portuguese<td class=letters><ul class=letters><li class=letter>á<li class=letter>à<li class=letter>â<li class=letter>ã<li class=letter>ç<li class=letter>é<li class=letter>ê<li class=letter>í<li class=letter>ó<li class=letter>ô<li class=letter>õ<li class=letter>ú<li class=letter>ü</ul><td class=letters><ul class=letters><li class=letter>k<li class=letter>w<li class=letter>y</ul>
+                <tr><th>Romanian<td class=letters><ul class=letters><li class=letter>â<li class=letter>ă<li class=letter>î<li class=letter>ș<li class=letter>ț</ul><td class=letters><ul class=letters></ul>
+                <tr><th>Spanish<td class=letters><ul class=letters><li class=letter>á<li class=letter>é<li class=letter>í<li class=letter>ñ<li class=letter>ó<li class=letter>ú<li class=letter>ü</ul><td class=letters><ul class=letters></ul>
+                <tr><th>Swedish<td class=letters><ul class=letters><li class=letter>ä<li class=letter>å<li class=letter>ö</ul><td class=letters><ul class=letters><li class=letter>q<li class=letter>z</ul>
+                <tr><th>Turkish<td class=letters><ul class=letters><li class=letter>ç<li class=letter>ğ<li class=letter>ı<li class=letter>ö<li class=letter>ş<li class=letter>ü</ul><td class=letters><ul class=letters><li class=letter>q<li class=letter>w<li class=letter>x</ul>
+                <tr><th>Welsh<td class=letters><ul class=letters><li class=letter>ŵ<li class=letter>ŷ</ul><td class=letters><ul class=letters><li class=letter>k<li class=letter>q<li class=letter>v<li class=letter>x<li class=letter>z</ul>
+                <!--###-->
             </table>
 
 		</div>

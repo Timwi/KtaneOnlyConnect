@@ -222,6 +222,7 @@ public class OnlyConnectModule : MonoBehaviour
     private static int _moduleIdCounter = 1;
     private bool _isSolved;
     private int _round1Answer;
+    private const int _wallSize = 3;
 
     void Start()
     {
@@ -309,17 +310,16 @@ public class OnlyConnectModule : MonoBehaviour
             StartCoroutine(ConnectingWallBackgroundAnimation(pressedEgyptianHieroglyph.position));
 
             retry:
-            var wall = new char[4][];
-            var names = new string[4];
-            var commonToAll = "abcdefghijklmnopqrstuvwxyz".Where(ch => _alphabets.All(v => v.Contains(ch))).ToArray();
-            var availableAlphabets = _alphabets.Select((abc, i) => new { Letters = new HashSet<char>(abc.Except(commonToAll)), Name = _alphabetNames[i] }).ToList();
+            var wall = new char[_wallSize][];
+            var names = new string[_wallSize];
+            var availableAlphabets = _alphabets.Select((abc, i) => new { Letters = new HashSet<char>(abc), Name = _alphabetNames[i] }).ToList();
 
             // Generate a possible connecting wall.
-            for (var i = 0; i < 4; i++)
+            for (var i = 0; i < _wallSize; i++)
             {
                 var index = Rnd.Range(0, availableAlphabets.Count);
                 var alphabet = availableAlphabets[index].Letters;
-                wall[i] = alphabet.ToList().Shuffle().Take(4).ToArray();
+                wall[i] = alphabet.ToList().Shuffle().Take(_wallSize).ToArray();
                 names[i] = availableAlphabets[index].Name;
                 availableAlphabets.RemoveAt(index);
                 var others = availableAlphabets.Where(a => wall[i].All(a.Letters.Contains)).ToList();
@@ -328,7 +328,7 @@ public class OnlyConnectModule : MonoBehaviour
                     if (wall[i].Any(remaining.Letters.Contains))
                         foreach (var letter in allLetters)
                             remaining.Letters.Remove(letter);
-                availableAlphabets.RemoveAll(s => s.Letters.Count < 4);
+                availableAlphabets.RemoveAll(s => s.Letters.Count < _wallSize);
                 if (availableAlphabets.Count == 0)
                     goto retry;
             }
@@ -338,14 +338,14 @@ public class OnlyConnectModule : MonoBehaviour
                 goto retry;
 
             Debug.LogFormat(@"[Only Connect #{0}] Connecting Wall solution:", _moduleId);
-            for (int i = 0; i < 4; i++)
-                Debug.LogFormat(@"[Only Connect #{0}] {1} {2} {3} {4} ({5})", _moduleId, wall[i][0], wall[i][1], wall[i][2], wall[i][3], names[i]);
+            for (int i = 0; i < _wallSize; i++)
+                Debug.LogFormat(@"[Only Connect #{0}] {1} ({2})", _moduleId, wall[i].JoinString(" "), names[i]);
 
             var curSelectedGroup = new List<char>();
             var numSolvedGroups = 0;
 
             var jumbledLetters = wall.SelectMany(row => row).ToList().Shuffle();
-            var buttons = Enumerable.Range(0, 16).Select(i =>
+            var buttons = Enumerable.Range(0, _wallSize * _wallSize).Select(i =>
             {
                 var ch = jumbledLetters[i];
                 var btn = ConnectingWallParent.transform.Find(string.Format("Button #{0}", i + 1));
@@ -359,7 +359,7 @@ public class OnlyConnectModule : MonoBehaviour
             }).ToArray();
 
             var btns = buttons.Select(b => b.Button).ToArray();
-            StartCoroutine(MoveButtons(btns, Enumerable.Range(0, 16).ToArray(), btns, randomUpPosition: true));
+            StartCoroutine(MoveButtons(btns, Enumerable.Range(0, _wallSize * _wallSize).ToArray(), btns, randomUpPosition: true));
 
             foreach (var inf_FE in buttons)
             {
@@ -367,7 +367,7 @@ public class OnlyConnectModule : MonoBehaviour
                 inf.Button.OnInteract += delegate
                 {
                     var btnIx = Array.IndexOf(buttons, inf);
-                    if (btnIx < 4 * numSolvedGroups || _isSolved)
+                    if (btnIx < _wallSize * numSolvedGroups || _isSolved)
                         return false;
 
                     Audio.PlaySoundAtTransform("Click", inf.Button.transform);
@@ -384,9 +384,9 @@ public class OnlyConnectModule : MonoBehaviour
                         inf.Renderer.material = ButtonSelected[numSolvedGroups];
                         inf.Text.color = Color.white;
 
-                        if (curSelectedGroup.Count == 4)
+                        if (curSelectedGroup.Count == _wallSize)
                         {
-                            var correctGroup = Enumerable.Range(0, 4).Select(ix => (int?) ix).FirstOrDefault(ix => !wall[ix.Value].Except(curSelectedGroup).Any() && !curSelectedGroup.Except(wall[ix.Value]).Any());
+                            var correctGroup = Enumerable.Range(0, _wallSize).Select(ix => (int?) ix).FirstOrDefault(ix => !wall[ix.Value].Except(curSelectedGroup).Any() && !curSelectedGroup.Except(wall[ix.Value]).Any());
                             if (correctGroup == null)
                             {
                                 // User selected a wrong group: give a strike and reset the selected buttons
@@ -409,27 +409,27 @@ public class OnlyConnectModule : MonoBehaviour
                                 Debug.LogFormat(@"[Only Connect #{0}] Submitted correct group: {1}", _moduleId, curSelectedGroup.JoinString(", "));
 
                                 // Move the correct group to the top
-                                for (int i = 0; i < 4; i++)
+                                for (int i = 0; i < _wallSize; i++)
                                 {
                                     var ix = buttons.IndexOf(b => b.Character == curSelectedGroup[i]);
-                                    var t = buttons[4 * numSolvedGroups + i];
-                                    buttons[4 * numSolvedGroups + i] = buttons[ix];
+                                    var t = buttons[_wallSize * numSolvedGroups + i];
+                                    buttons[_wallSize * numSolvedGroups + i] = buttons[ix];
                                     buttons[ix] = t;
                                 }
                                 numSolvedGroups++;
 
-                                if (numSolvedGroups == 3)
+                                if (numSolvedGroups == _wallSize - 1)
                                 {
-                                    for (int i = 12; i < 16; i++)
+                                    for (int i = _wallSize * (_wallSize - 1); i < _wallSize * _wallSize; i++)
                                     {
-                                        buttons[i].Renderer.material = ButtonSelected[3];
+                                        buttons[i].Renderer.material = ButtonSelected[_wallSize - 1];
                                         buttons[i].Text.color = Color.white;
                                     }
                                     _isSolved = true;
                                     Module.HandlePass();
                                 }
 
-                                StartCoroutine(MoveButtons(buttons.Select(b => b.Button).ToArray(), curSelectedGroup.Select(ch => buttons.IndexOf(b => b.Character == ch)).ToArray(), buttons.Select(b => b.Button).Skip(4 * numSolvedGroups).ToArray()));
+                                StartCoroutine(MoveButtons(buttons.Select(b => b.Button).ToArray(), curSelectedGroup.Select(ch => buttons.IndexOf(b => b.Character == ch)).ToArray(), buttons.Select(b => b.Button).Skip(_wallSize * numSolvedGroups).ToArray()));
                             }
                             curSelectedGroup.Clear();
                         }
@@ -446,19 +446,19 @@ public class OnlyConnectModule : MonoBehaviour
 
     private IEnumerator ResetButtons(Action action)
     {
-        yield return new WaitForSeconds(.2f);
+        yield return new WaitForSeconds(.5f);
         action();
     }
 
     private static IEnumerable<string> CheckWallUnique(char[] chs, int index, int subIndex, Stack<string> already, Dictionary<string, HashSet<char>> alphabets)
     {
-        if (index == 16)
+        if (index == _wallSize * _wallSize)
         {
             yield return new string(chs);
             yield break;
         }
 
-        if (index % 4 == 0)
+        if (index % _wallSize == 0)
         {
             foreach (var kvp in alphabets)
                 if (kvp.Value.Contains(chs[index]) && !already.Contains(kvp.Key))
@@ -472,7 +472,7 @@ public class OnlyConnectModule : MonoBehaviour
         else
         {
             var curAlph = alphabets[already.Peek()];
-            for (int i = subIndex; i < 16; i++)
+            for (int i = subIndex; i < _wallSize * _wallSize; i++)
                 if (curAlph.Contains(chs[i]))
                 {
                     var t = chs[i];
@@ -496,19 +496,19 @@ public class OnlyConnectModule : MonoBehaviour
 
     private IEnumerator MoveButtons(KMSelectable[] buttons, int[] mustMove, KMSelectable[] newChildren, bool randomUpPosition = false)
     {
-        const float dx = .0375f;
-        const float dy = .0225f;
+        const float dx = .038f;
+        const float dy = .024f;
         const float howFarUp = .02f;
 
         var infs = buttons.Select((b, i) =>
         {
             var oldPos = b.transform.localPosition;
-            var newPos = new Vector3(dx * (i % 4) - (1.5f * dx), 0, dy * (-(i / 4)) + (1.5f * dy));
+            var newPos = new Vector3(dx * (i % _wallSize) - dx, 0, dy * (-(i / _wallSize)) + dy);
             return new
             {
                 Button = b,
                 OldPos = oldPos,
-                OldPosUp = randomUpPosition ? new Vector3(Rnd.Range(-.05f, .05f), howFarUp, Rnd.Range(-.025f, .035f)) : mustMove.Contains(i) ? new Vector3(oldPos.x, howFarUp, oldPos.z) : new Vector3(oldPos.x, howFarUp / 2, oldPos.z),
+                OldPosUp = randomUpPosition ? new Vector3(Rnd.Range(-.04f, .04f), howFarUp, Rnd.Range(-.02f, .03f)) : mustMove.Contains(i) ? new Vector3(oldPos.x, howFarUp, oldPos.z) : new Vector3(oldPos.x, howFarUp / 2, oldPos.z),
                 NewPos = newPos,
                 ShouldMove = newPos != oldPos || mustMove.Contains(i),
                 MustMove = mustMove.Contains(i)
