@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using OnlyConnect;
 using UnityEngine;
 
@@ -223,6 +224,7 @@ public class OnlyConnectModule : MonoBehaviour
     private bool _isSolved;
     private int _round1Answer;
     private const int _wallSize = 3;
+    private int[] _hieroglyphsDisplayed;
 
     void Start()
     {
@@ -233,26 +235,27 @@ public class OnlyConnectModule : MonoBehaviour
 
         Module.OnActivate += delegate
         {
-            var hieroglyphsDisplayed = Enumerable.Range(0, 6).ToArray();
+            _hieroglyphsDisplayed = Enumerable.Range(0, 6).ToArray();
             var serial = Bomb.GetSerialNumber();
             var serialProc = serial.Select(ch => ch == '0' ? 'Z' : ch >= '1' && ch <= '9' ? (char) (ch - '1' + 'A') : ch).JoinString();
-            var hasPorts = Ut.NewArray(
-                Bomb.IsPortPresent(KMBombInfoExtensions.KnownPortType.PS2),
-                Bomb.IsPortPresent(KMBombInfoExtensions.KnownPortType.Parallel),
-                Bomb.IsPortPresent(KMBombInfoExtensions.KnownPortType.RJ45),
-                Bomb.IsPortPresent(KMBombInfoExtensions.KnownPortType.StereoRCA),
-                Bomb.IsPortPresent(KMBombInfoExtensions.KnownPortType.Serial),
-                Bomb.IsPortPresent(KMBombInfoExtensions.KnownPortType.DVI)
+            var ports = Ut.NewArray(
+                KMBombInfoExtensions.KnownPortType.PS2,
+                KMBombInfoExtensions.KnownPortType.Parallel,
+                KMBombInfoExtensions.KnownPortType.RJ45,
+                KMBombInfoExtensions.KnownPortType.StereoRCA,
+                KMBombInfoExtensions.KnownPortType.Serial,
+                KMBombInfoExtensions.KnownPortType.DVI
             );
+            var hasPorts = ports.Select(port => Bomb.IsPortPresent(port)).ToArray();
 
             retry:
-            hieroglyphsDisplayed.Shuffle();
+            _hieroglyphsDisplayed.Shuffle();
             var team = _teams[Rnd.Range(0, _teams.Length)];
 
             var matches = new int[6];
             for (int i = 0; i < 6; i++)
             {
-                if (hieroglyphsDisplayed[i] == i)
+                if (_hieroglyphsDisplayed[i] == i)
                     matches[i]++;
                 if (team.ToUpperInvariant().Contains(serialProc[i]))
                     matches[i]++;
@@ -269,28 +272,33 @@ public class OnlyConnectModule : MonoBehaviour
             _round1Answer = Array.IndexOf(matches, uniqueCount);
 
             Debug.LogFormat(@"[Only Connect #{0}] Team name: {1}", _moduleId, team);
-            var format = @"[Only Connect #{0}] {1,-13} {2,-6} {3,-6} {4,-6} {5,-3} {6}";
-            Debug.LogFormat(format, _moduleId, "Hieroglyph", "#1", "#2", "#3", "num", "");
+            var format = @"[Only Connect #{0}] {1,-13} {2,-9} {3,-8} {4,-9} {5,-3} {6}";
+            Debug.LogFormat(format, _moduleId, "Hieroglyph", "Position", "Serial#", "Ports", "num", "");
+            var positions = new[] { "TL", "TM", "TR", "BL", "BM", "BR" };
             for (int i = 0; i < 6; i++)
             {
-                var displayedHieroglyph = _hieroglyphs[hieroglyphsDisplayed[i]];
-                EgyptianHieroglyphButtons[i].GetComponent<MeshRenderer>().material = EgyptianHieroglyphs[hieroglyphsDisplayed[i]];
-                Debug.LogFormat(format, _moduleId, displayedHieroglyph, hieroglyphsDisplayed[i] == i, team.Contains(serialProc[hieroglyphsDisplayed[i]]), hasPorts[hieroglyphsDisplayed[i]], matches[hieroglyphsDisplayed[i]], hieroglyphsDisplayed[i] == _round1Answer ? "← ✓" : "");
-                if (hieroglyphsDisplayed[i] == _round1Answer)
-                    EgyptianHieroglyphButtons[i].OnInteract = StartRound2(EgyptianHieroglyphButtons[i].transform);
+                EgyptianHieroglyphButtons[i].GetComponent<MeshRenderer>().material = EgyptianHieroglyphs[_hieroglyphsDisplayed[i]];
+                Debug.LogFormat(format, _moduleId, _hieroglyphs[i], positions[Array.IndexOf(_hieroglyphsDisplayed, i)] + "=" + (_hieroglyphsDisplayed[i] == i), serialProc[i] + "=" + team.Contains(serialProc[i]), ports[i].ToString().Substring(0, 2) + "=" + hasPorts[i], matches[i], i == _round1Answer ? "← ✓" : "");
+                if (_hieroglyphsDisplayed[i] == _round1Answer)
+                    EgyptianHieroglyphButtons[i].OnInteract = StartRound2(EgyptianHieroglyphButtons[i]);
                 else
-                    EgyptianHieroglyphButtons[i].OnInteract = delegate
-                    {
-                        Debug.LogFormat(@"[Only Connect #{0}] {1} was the wrong Egyptian hieroglyph. Strike.", _moduleId, displayedHieroglyph);
-                        Module.HandleStrike();
-                        return false;
-                    };
+                    EgyptianHieroglyphButtons[i].OnInteract = Round1Strike(i, _hieroglyphsDisplayed[i]);
             }
 
             EgyptianHieroglyphsParent.SetActive(true);
-            // Need extra nulls because child row length is 4
-            MainSelectable.Children = new KMSelectable[8] { EgyptianHieroglyphButtons[0], EgyptianHieroglyphButtons[1], EgyptianHieroglyphButtons[2], null, EgyptianHieroglyphButtons[3], EgyptianHieroglyphButtons[4], EgyptianHieroglyphButtons[5], null };
+            MainSelectable.Children = EgyptianHieroglyphButtons;
             MainSelectable.UpdateChildren(EgyptianHieroglyphButtons[0]);
+        };
+    }
+
+    private KMSelectable.OnInteractHandler Round1Strike(int btnIx, int hierIx)
+    {
+        return delegate
+        {
+            EgyptianHieroglyphButtons[btnIx].AddInteractionPunch(1f);
+            Debug.LogFormat(@"[Only Connect #{0}] {1} was the wrong Egyptian hieroglyph. Strike.", _moduleId, _hieroglyphs[hierIx]);
+            Module.HandleStrike();
+            return false;
         };
     }
 
@@ -301,13 +309,14 @@ public class OnlyConnectModule : MonoBehaviour
         ConnectingWallParent.SetActive(false);
     }
 
-    private KMSelectable.OnInteractHandler StartRound2(Transform pressedEgyptianHieroglyph)
+    private KMSelectable.OnInteractHandler StartRound2(KMSelectable pressedEgyptianHieroglyph)
     {
         return delegate
         {
-            Audio.PlaySoundAtTransform("ButtonPress", pressedEgyptianHieroglyph);
+            pressedEgyptianHieroglyph.AddInteractionPunch(1f);
+            Audio.PlaySoundAtTransform("ButtonPress", pressedEgyptianHieroglyph.transform);
             ConnectingWallParent.SetActive(true);
-            StartCoroutine(ConnectingWallBackgroundAnimation(pressedEgyptianHieroglyph.position));
+            StartCoroutine(ConnectingWallBackgroundAnimation(pressedEgyptianHieroglyph.transform.position));
 
             retry:
             var wall = new char[_wallSize][];
@@ -349,7 +358,7 @@ public class OnlyConnectModule : MonoBehaviour
             {
                 var ch = jumbledLetters[i];
                 var btn = ConnectingWallParent.transform.Find(string.Format("Button #{0}", i + 1));
-                btn.transform.position = pressedEgyptianHieroglyph.position;
+                btn.transform.position = pressedEgyptianHieroglyph.transform.position;
                 var renderer = btn.GetComponent<MeshRenderer>();
                 renderer.material = ButtonBackground;
                 var textMesh = btn.Find(string.Format("Button #{0} text", i + 1)).GetComponent<TextMesh>();
@@ -366,6 +375,7 @@ public class OnlyConnectModule : MonoBehaviour
                 var inf = inf_FE;
                 inf.Button.OnInteract += delegate
                 {
+                    inf.Button.AddInteractionPunch(1f);
                     var btnIx = Array.IndexOf(buttons, inf);
                     if (btnIx < _wallSize * numSolvedGroups || _isSolved)
                         return false;
@@ -427,6 +437,7 @@ public class OnlyConnectModule : MonoBehaviour
                                     }
                                     _isSolved = true;
                                     Module.HandlePass();
+                                    numSolvedGroups++;
                                 }
 
                                 StartCoroutine(MoveButtons(buttons.Select(b => b.Button).ToArray(), curSelectedGroup.Select(ch => buttons.IndexOf(b => b.Character == ch)).ToArray(), buttons.Select(b => b.Button).Skip(_wallSize * numSolvedGroups).ToArray()));
@@ -437,9 +448,6 @@ public class OnlyConnectModule : MonoBehaviour
                     return false;
                 };
             }
-
-            MainSelectable.Children = buttons.Select(inf => inf.Button).ToArray();
-            MainSelectable.UpdateChildren(MainSelectable.Children[0]);
             return false;
         };
     }
@@ -543,6 +551,6 @@ public class OnlyConnectModule : MonoBehaviour
                 inf.Button.transform.localPosition = inf.NewPos;
 
         MainSelectable.Children = newChildren;
-        MainSelectable.UpdateChildren(MainSelectable.Children[0]);
+        MainSelectable.UpdateChildren(newChildren.Length == 0 ? null : MainSelectable.Children[0]);
     }
 }
