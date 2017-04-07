@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using OnlyConnect;
 using UnityEngine;
 
@@ -221,14 +222,18 @@ public class OnlyConnectModule : MonoBehaviour
 
     private int _moduleId;
     private static int _moduleIdCounter = 1;
+    private bool _isRound2;
     private bool _isSolved;
     private int _round1Answer;
     private const int _wallSize = 3;
     private int[] _hieroglyphsDisplayed;
+    private KMSelectable[] _round2Buttons;
+    private char[] _round2Characters;
 
     void Start()
     {
         _moduleId = _moduleIdCounter++;
+        _isRound2 = false;
         _isSolved = false;
 
         StartCoroutine(InitialDisable());
@@ -367,8 +372,9 @@ public class OnlyConnectModule : MonoBehaviour
                 return new { Button = sel, Character = ch, Text = textMesh, Renderer = renderer };
             }).ToArray();
 
-            var btns = buttons.Select(b => b.Button).ToArray();
-            StartCoroutine(MoveButtons(btns, Enumerable.Range(0, _wallSize * _wallSize).ToArray(), btns, randomUpPosition: true));
+            _round2Buttons = buttons.Select(b => b.Button).ToArray();
+            _round2Characters = buttons.Select(b => b.Character).ToArray();
+            StartCoroutine(MoveButtons(_round2Buttons, Enumerable.Range(0, _wallSize * _wallSize).ToArray(), _round2Buttons, randomUpPosition: true));
 
             foreach (var inf_FE in buttons)
             {
@@ -440,6 +446,9 @@ public class OnlyConnectModule : MonoBehaviour
                                     numSolvedGroups++;
                                 }
 
+                                _round2Buttons = buttons.Select((b, i) => i >= 4 * numSolvedGroups ? b.Button : null).ToArray();
+                                _round2Characters = buttons.Select(b => b.Character).ToArray();
+
                                 StartCoroutine(MoveButtons(buttons.Select(b => b.Button).ToArray(), curSelectedGroup.Select(ch => buttons.IndexOf(b => b.Character == ch)).ToArray(), buttons.Select(b => b.Button).Skip(_wallSize * numSolvedGroups).ToArray()));
                             }
                             curSelectedGroup.Clear();
@@ -448,6 +457,8 @@ public class OnlyConnectModule : MonoBehaviour
                     return false;
                 };
             }
+
+            _isRound2 = true;
             return false;
         };
     }
@@ -552,5 +563,69 @@ public class OnlyConnectModule : MonoBehaviour
 
         MainSelectable.Children = newChildren;
         MainSelectable.UpdateChildren(newChildren.Length == 0 ? null : MainSelectable.Children[0]);
+    }
+
+    KMSelectable[] ProcessTwitchCommand(string command)
+    {
+        if (_isSolved)
+            return null;
+
+        if (!_isRound2)
+        {
+            // Round 1: Egyptian hieroglyphs
+            switch (Regex.Replace(command.ToLowerInvariant(), @"  +", " ").Replace("center", "middle").Replace("centre", "middle"))
+            {
+                case "two reeds": return new[] { EgyptianHieroglyphButtons[Array.IndexOf(_hieroglyphsDisplayed, 0)] };
+                case "lion": return new[] { EgyptianHieroglyphButtons[Array.IndexOf(_hieroglyphsDisplayed, 1)] };
+                case "twisted flax": return new[] { EgyptianHieroglyphButtons[Array.IndexOf(_hieroglyphsDisplayed, 2)] };
+                case "horned viper": return new[] { EgyptianHieroglyphButtons[Array.IndexOf(_hieroglyphsDisplayed, 3)] };
+                case "water": return new[] { EgyptianHieroglyphButtons[Array.IndexOf(_hieroglyphsDisplayed, 4)] };
+                case "eye of horus": return new[] { EgyptianHieroglyphButtons[Array.IndexOf(_hieroglyphsDisplayed, 5)] };
+
+                case "tl": case "lt": case "lefttop": case "topleft": case "top left": case "left top": case "1": return new[] { EgyptianHieroglyphButtons[0] };
+                case "tm": case "mt": case "tc": case "ct": case "middletop": case "topmiddle": case "top middle": case "middle top": case "2": return new[] { EgyptianHieroglyphButtons[1] };
+                case "tr": case "rt": case "righttop": case "topright": case "top right": case "right top": case "3": return new[] { EgyptianHieroglyphButtons[2] };
+                case "bl": case "lb": case "leftbottom": case "bottomleft": case "bottom left": case "left bottom": case "4": return new[] { EgyptianHieroglyphButtons[3] };
+                case "bm": case "mb": case "bc": case "cb": case "middlebottom": case "bottommiddle": case "bottom middle": case "middle bottom": case "5": return new[] { EgyptianHieroglyphButtons[4] };
+                case "br": case "rb": case "rightbottom": case "bottomright": case "bottom right": case "right bottom": case "6": return new[] { EgyptianHieroglyphButtons[5] };
+            }
+            return null;
+        }
+        else
+        {
+            // Round 2: Connecting Wall
+            var btns = new List<KMSelectable>();
+            foreach (var cmd in command.ToLowerInvariant().Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                int number;
+                if (int.TryParse(cmd, out number) && number >= 1 && number <= 9)
+                    btns.Add(_round2Buttons[number - 1]);
+                else if (cmd.Length == 1 && (number = Array.IndexOf(_round2Characters, cmd[0])) != -1)
+                    btns.Add(_round2Buttons[number]);
+                else
+                    switch (cmd.Replace("center", "middle").Replace("centre", "middle"))
+                    {
+                        case "tl": case "lt": case "topleft": case "lefttop": case "1": btns.Add(_round2Buttons[0]); break;
+                        case "tm": case "tc": case "mt": case "ct": case "topmiddle": case "middletop": case "2": btns.Add(_round2Buttons[1]); break;
+                        case "tr": case "rt": case "topright": case "righttop": case "3": btns.Add(_round2Buttons[2]); break;
+
+                        case "ml": case "cl": case "lm": case "lc": case "middleleft": case "leftmiddle": case "4": btns.Add(_round2Buttons[3]); break;
+                        case "mm": case "cm": case "mc": case "cc": case "middle": case "middlemiddle": case "5": btns.Add(_round2Buttons[4]); break;
+                        case "mr": case "cr": case "rm": case "rc": case "middleright": case "rightmiddle": case "6": btns.Add(_round2Buttons[5]); break;
+
+                        case "bl": case "lb": case "bottomleft": case "leftbottom": case "7": btns.Add(_round2Buttons[6]); break;
+                        case "bm": case "bc": case "mb": case "cb": case "bottommiddle": case "middlebottom": case "8": btns.Add(_round2Buttons[7]); break;
+                        case "br": case "rb": case "bottomright": case "rightbottom": case "9": btns.Add(_round2Buttons[8]); break;
+
+                        default: return null;
+                    }
+            }
+
+            // If any of the commands pointed to a button in an already-solved group, bail out
+            if (btns.Any(b => b == null))
+                return null;
+
+            return btns.ToArray();
+        }
     }
 }
