@@ -10,7 +10,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5cf2299c8864afe4ab42466f546ae20d, type: 3}
   m_Name: WorkshopItem
-  m_EditorClassIdentifier:
+  m_EditorClassIdentifier: 
   WorkshopPublishedFileID: 885638564
   Title: Only Connect
   Description: "Hello and welcome to Only Connect \u2014 where everyone\u2019s very
@@ -19,7 +19,8 @@ MonoBehaviour:
     created by Timwi as an homage to the BBC quiz show [i]Only Connect[/i]. Use of
     the show\u2019s graphics and sounds constitute Fair Use under United States copyright
     law.\n\n[url=http://ktane.timwi.de/PDF/Only%20Connect.pdf]Manual PDF[/url]\n[url=http://ktane.timwi.de/HTML/Only%20Connect.html]Manual
-    HTML[/url]"
+    HTML[/url]\n[b][url=https://www.youtube.com/watch?v=3bvW4IQIFqA]Tutorial video[/url]
+    (thanks Elias!)[/b]"
   PreviewImage: {fileID: 2800000, guid: 36b4ff4b15793084b818776d2701f85d, type: 3}
   Tags:
   - Regular Module
