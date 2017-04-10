@@ -570,17 +570,22 @@ public class OnlyConnectModule : MonoBehaviour
         if (_isSolved)
             return null;
 
+        if (!command.StartsWith("press "))
+            return null;
+
+        command = command.Substring(6).ToLowerInvariant();
+
         if (!_isRound2)
         {
             // Round 1: Egyptian hieroglyphs
-            switch (Regex.Replace(command.ToLowerInvariant(), @"  +", " ").Replace("center", "middle").Replace("centre", "middle"))
+            switch (Regex.Replace(command, @"  +", " ").Replace("center", "middle").Replace("centre", "middle"))
             {
-                case "two reeds": return new[] { EgyptianHieroglyphButtons[Array.IndexOf(_hieroglyphsDisplayed, 0)] };
+                case "two reeds": case "reeds": case "2 reeds": case "2reeds": return new[] { EgyptianHieroglyphButtons[Array.IndexOf(_hieroglyphsDisplayed, 0)] };
                 case "lion": return new[] { EgyptianHieroglyphButtons[Array.IndexOf(_hieroglyphsDisplayed, 1)] };
-                case "twisted flax": return new[] { EgyptianHieroglyphButtons[Array.IndexOf(_hieroglyphsDisplayed, 2)] };
-                case "horned viper": return new[] { EgyptianHieroglyphButtons[Array.IndexOf(_hieroglyphsDisplayed, 3)] };
+                case "twisted flax": case "twistedflax": case "flax": return new[] { EgyptianHieroglyphButtons[Array.IndexOf(_hieroglyphsDisplayed, 2)] };
+                case "horned viper": case "hornedviper": case "viper": return new[] { EgyptianHieroglyphButtons[Array.IndexOf(_hieroglyphsDisplayed, 3)] };
                 case "water": return new[] { EgyptianHieroglyphButtons[Array.IndexOf(_hieroglyphsDisplayed, 4)] };
-                case "eye of horus": return new[] { EgyptianHieroglyphButtons[Array.IndexOf(_hieroglyphsDisplayed, 5)] };
+                case "eye of horus": case "eyeofhorus": case "eye": case "horus": return new[] { EgyptianHieroglyphButtons[Array.IndexOf(_hieroglyphsDisplayed, 5)] };
 
                 case "tl": case "lt": case "lefttop": case "topleft": case "top left": case "left top": case "1": return new[] { EgyptianHieroglyphButtons[0] };
                 case "tm": case "mt": case "tc": case "ct": case "middletop": case "topmiddle": case "top middle": case "middle top": case "2": return new[] { EgyptianHieroglyphButtons[1] };
@@ -595,7 +600,7 @@ public class OnlyConnectModule : MonoBehaviour
         {
             // Round 2: Connecting Wall
             var btns = new List<KMSelectable>();
-            foreach (var cmd in command.ToLowerInvariant().Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries))
+            foreach (var cmd in command.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries))
             {
                 int number;
                 if (int.TryParse(cmd, out number) && number >= 1 && number <= 9)
