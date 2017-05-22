@@ -406,7 +406,7 @@ public class OnlyConnectModule : MonoBehaviour
                             if (correctGroup == null)
                             {
                                 // User selected a wrong group: give a strike and reset the selected buttons
-                                Debug.LogFormat(@"[Only Connect #{0}] Submitted incorrect group: {1}", _moduleId, curSelectedGroup.JoinString(", "));
+                                Debug.LogFormat(@"[Only Connect #{0}] Submitted incorrect group: {1}", _moduleId, curSelectedGroup.JoinString(" "));
                                 Module.HandleStrike();
                                 var btns2 = buttons.Where(inf2 => curSelectedGroup.Contains(inf2.Character)).ToArray();
                                 StartCoroutine(ResetButtons(delegate
@@ -422,7 +422,7 @@ public class OnlyConnectModule : MonoBehaviour
                             else
                             {
                                 // User selected a correct group
-                                Debug.LogFormat(@"[Only Connect #{0}] Submitted correct group: {1}", _moduleId, curSelectedGroup.JoinString(", "));
+                                Debug.LogFormat(@"[Only Connect #{0}] Submitted correct group: {1}", _moduleId, curSelectedGroup.JoinString(" "));
 
                                 // Move the correct group to the top
                                 for (int i = 0; i < _wallSize; i++)
