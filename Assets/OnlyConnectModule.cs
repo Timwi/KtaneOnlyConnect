@@ -452,7 +452,7 @@ public class OnlyConnectModule : MonoBehaviour
                                     numSolvedGroups++;
                                 }
 
-                                _round2Buttons = buttons.Select((b, i) => i >= 4 * numSolvedGroups ? b.Button : null).ToArray();
+                                _round2Buttons = buttons.Select((b, i) => i >= _wallSize * numSolvedGroups ? b.Button : null).ToArray();
                                 _round2Characters = buttons.Select(b => b.Character).ToArray();
 
                                 StartCoroutine(MoveButtons(buttons.Select(b => b.Button).ToArray(), curSelectedGroup.Select(ch => buttons.IndexOf(b => b.Character == ch)).ToArray(), buttons.Select(b => b.Button).Skip(_wallSize * numSolvedGroups).ToArray()));
