@@ -585,7 +585,7 @@ public class OnlyConnectModule : MonoBehaviour
             if (inf.ShouldMove)
                 inf.Button.transform.localPosition = inf.NewPos;
 
-        MainSelectable.Children = newChildren;
+        MainSelectable.Children = newChildren.Length == 0 ? new[] { EgyptianHieroglyphButtons[0] } : newChildren;
         MainSelectable.UpdateChildren(newChildren.Length == 0 ? null : MainSelectable.Children[0]);
     }
 
