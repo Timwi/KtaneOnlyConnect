@@ -559,26 +559,30 @@ public class OnlyConnectModule : MonoBehaviour
         }).ToArray();
 
         // Move towards camera
-        const int steps1 = 20;
-        for (int i = 0; i <= steps1; i++)
+        const float duration1 = .35f;
+        var elapsed = 0f;
+        while (elapsed < duration1)
         {
+            yield return null;
+            elapsed += Time.deltaTime;
             foreach (var inf in infs)
                 if (inf.ShouldMove)
-                    inf.Button.transform.localPosition = Vector3.Lerp(inf.OldPos, inf.OldPosUp, i / (float) steps1);
-            yield return null;
+                    inf.Button.transform.localPosition = Vector3.Lerp(inf.OldPos, inf.OldPosUp, Mathf.Min(1, elapsed / duration1));
         }
 
         yield return new WaitForSeconds(.15f);
         Audio.PlaySoundAtTransform("Woosh", buttons[0].transform);
 
         // Move to final position
-        const int steps3 = 35;
-        for (int i = 0; i <= steps3; i++)
+        const float duration2 = .6f;
+        elapsed = 0;
+        while (elapsed < duration2)
         {
+            yield return null;
+            elapsed += Time.deltaTime;
             foreach (var inf in infs)
                 if (inf.ShouldMove)
-                    inf.Button.transform.localPosition = Vector3.Lerp(inf.OldPosUp, inf.NewPos, i / (float) steps3);
-            yield return null;
+                    inf.Button.transform.localPosition = Vector3.Lerp(inf.OldPosUp, inf.NewPos, Mathf.Min(1, elapsed / duration2));
         }
 
         foreach (var inf in infs)
