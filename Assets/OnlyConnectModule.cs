@@ -593,6 +593,10 @@ public class OnlyConnectModule : MonoBehaviour
         MainSelectable.UpdateChildren(newChildren.Length == 0 ? null : MainSelectable.Children[0]);
     }
 
+#pragma warning disable 414
+    private string TwitchHelpMessage = @"Press a button by position with “!{0} press tm” or “!{0} press 2”. Round 1 also accepts symbol names (e.g. reeds, eye, flax, lion, water, viper).";
+#pragma warning restore 414
+
     KMSelectable[] ProcessTwitchCommand(string command)
     {
         if (_isSolved)
