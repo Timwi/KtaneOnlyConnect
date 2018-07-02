@@ -260,64 +260,7 @@ public class OnlyConnectModule : MonoBehaviour
         _isRound2 = false;
         _isSolved = false;
 
-        StartCoroutine(InitialDisable());
-
-        Module.OnActivate += delegate
-        {
-            _hieroglyphsDisplayed = Enumerable.Range(0, 6).ToArray();
-            var serial = Bomb.GetSerialNumber();
-            var serialProc = serial.Select(ch => ch == '0' ? 'Z' : ch >= '1' && ch <= '9' ? (char) (ch - '1' + 'A') : ch).JoinString();
-            var ports = Ut.NewArray(
-                KMBombInfoExtensions.KnownPortType.PS2,
-                KMBombInfoExtensions.KnownPortType.Parallel,
-                KMBombInfoExtensions.KnownPortType.RJ45,
-                KMBombInfoExtensions.KnownPortType.StereoRCA,
-                KMBombInfoExtensions.KnownPortType.Serial,
-                KMBombInfoExtensions.KnownPortType.DVI
-            );
-            var hasPorts = ports.Select(port => Bomb.IsPortPresent(port)).ToArray();
-
-            retry:
-            _hieroglyphsDisplayed.Shuffle();
-            var team = _teams[Rnd.Range(0, _teams.Length)];
-
-            var matches = new int[6];
-            for (int i = 0; i < 6; i++)
-            {
-                if (_hieroglyphsDisplayed[i] == i)
-                    matches[i]++;
-                if (team.ToUpperInvariant().Contains(serialProc[i]))
-                    matches[i]++;
-                if (hasPorts[i])
-                    matches[i]++;
-            }
-
-            var unique = Ut.NewArray(4, c => matches.Count(i => i == c) == 1);
-            if (unique.Count(c => c) != 1)
-                goto retry;
-
-            TeamName.text = team;
-            var uniqueCount = Array.IndexOf(unique, true);
-            _round1Answer = Array.IndexOf(matches, uniqueCount);
-
-            Debug.LogFormat(@"[Only Connect #{0}] Team name: {1}", _moduleId, team);
-            var format = @"[Only Connect #{0}] {1,-13} {2,-9} {3,-8} {4,-9} {5,-3} {6}";
-            Debug.LogFormat(format, _moduleId, "Hieroglyph", "Position", "Serial#", "Ports", "num", "");
-            var positions = new[] { "TL", "TM", "TR", "BL", "BM", "BR" };
-            for (int i = 0; i < 6; i++)
-            {
-                EgyptianHieroglyphButtons[i].GetComponent<MeshRenderer>().material = EgyptianHieroglyphs[_hieroglyphsDisplayed[i]];
-                Debug.LogFormat(format, _moduleId, _hieroglyphs[i], positions[Array.IndexOf(_hieroglyphsDisplayed, i)] + "=" + (_hieroglyphsDisplayed[i] == i), serialProc[i] + "=" + team.Contains(serialProc[i]), ports[i].ToString().Substring(0, 2) + "=" + hasPorts[i], matches[i], i == _round1Answer ? "← ✓" : "");
-                if (_hieroglyphsDisplayed[i] == _round1Answer)
-                    EgyptianHieroglyphButtons[i].OnInteract = StartRound2(EgyptianHieroglyphButtons[i]);
-                else
-                    EgyptianHieroglyphButtons[i].OnInteract = Round1Strike(i, _hieroglyphsDisplayed[i]);
-            }
-
-            EgyptianHieroglyphsParent.SetActive(true);
-            MainSelectable.Children = EgyptianHieroglyphButtons;
-            MainSelectable.UpdateChildren(EgyptianHieroglyphButtons[0]);
-        };
+        StartCoroutine(Initialize());
     }
 
     private KMSelectable.OnInteractHandler Round1Strike(int btnIx, int hierIx)
@@ -331,11 +274,63 @@ public class OnlyConnectModule : MonoBehaviour
         };
     }
 
-    private IEnumerator InitialDisable()
+    private IEnumerator Initialize()
     {
         yield return null;
-        EgyptianHieroglyphsParent.SetActive(false);
         ConnectingWallParent.SetActive(false);
+
+        _hieroglyphsDisplayed = Enumerable.Range(0, 6).ToArray();
+        var serial = Bomb.GetSerialNumber();
+        var serialProc = serial.Select(ch => ch == '0' ? 'Z' : ch >= '1' && ch <= '9' ? (char) (ch - '1' + 'A') : ch).JoinString();
+        var ports = Ut.NewArray(
+            KMBombInfoExtensions.KnownPortType.PS2,
+            KMBombInfoExtensions.KnownPortType.Parallel,
+            KMBombInfoExtensions.KnownPortType.RJ45,
+            KMBombInfoExtensions.KnownPortType.StereoRCA,
+            KMBombInfoExtensions.KnownPortType.Serial,
+            KMBombInfoExtensions.KnownPortType.DVI
+        );
+        var hasPorts = ports.Select(port => Bomb.IsPortPresent(port)).ToArray();
+
+        retry:
+        _hieroglyphsDisplayed.Shuffle();
+        var team = _teams[Rnd.Range(0, _teams.Length)];
+
+        var matches = new int[6];
+        for (int i = 0; i < 6; i++)
+        {
+            if (_hieroglyphsDisplayed[i] == i)
+                matches[i]++;
+            if (team.ToUpperInvariant().Contains(serialProc[i]))
+                matches[i]++;
+            if (hasPorts[i])
+                matches[i]++;
+        }
+
+        var unique = Ut.NewArray(4, c => matches.Count(i => i == c) == 1);
+        if (unique.Count(c => c) != 1)
+            goto retry;
+
+        TeamName.text = team;
+        var uniqueCount = Array.IndexOf(unique, true);
+        _round1Answer = Array.IndexOf(matches, uniqueCount);
+
+        Debug.LogFormat(@"[Only Connect #{0}] Team name: {1}", _moduleId, team);
+        var format = @"[Only Connect #{0}] {1,-13} {2,-9} {3,-8} {4,-9} {5,-3} {6}";
+        Debug.LogFormat(format, _moduleId, "Hieroglyph", "Position", "Serial#", "Ports", "num", "");
+        var positions = new[] { "TL", "TM", "TR", "BL", "BM", "BR" };
+        for (int i = 0; i < 6; i++)
+        {
+            EgyptianHieroglyphButtons[i].GetComponent<MeshRenderer>().material = EgyptianHieroglyphs[_hieroglyphsDisplayed[i]];
+            Debug.LogFormat(format, _moduleId, _hieroglyphs[i], positions[Array.IndexOf(_hieroglyphsDisplayed, i)] + "=" + (_hieroglyphsDisplayed[i] == i), serialProc[i] + "=" + team.Contains(serialProc[i]), ports[i].ToString().Substring(0, 2) + "=" + hasPorts[i], matches[i], i == _round1Answer ? "← ✓" : "");
+            if (_hieroglyphsDisplayed[i] == _round1Answer)
+                EgyptianHieroglyphButtons[i].OnInteract = StartRound2(EgyptianHieroglyphButtons[i]);
+            else
+                EgyptianHieroglyphButtons[i].OnInteract = Round1Strike(i, _hieroglyphsDisplayed[i]);
+        }
+
+        MainSelectable.Children = EgyptianHieroglyphButtons;
+        MainSelectable.UpdateChildren(EgyptianHieroglyphButtons[0]);
     }
 
     private KMSelectable.OnInteractHandler StartRound2(KMSelectable pressedEgyptianHieroglyph)
