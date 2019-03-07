@@ -337,10 +337,14 @@ public class OnlyConnectModule : MonoBehaviour
     {
         return delegate
         {
+            // Prevent accidental double-click
+            if (_isRound2)
+                return false;
+
             pressedEgyptianHieroglyph.AddInteractionPunch(1f);
             Audio.PlaySoundAtTransform("ButtonPress", pressedEgyptianHieroglyph.transform);
             ConnectingWallParent.SetActive(true);
-            StartCoroutine(ConnectingWallBackgroundAnimation(pressedEgyptianHieroglyph.transform.position));
+            StartCoroutine(ConnectingWallBackgroundAnimation());
 
             retry:
             var wall = new char[_wallSize][];
@@ -525,7 +529,7 @@ public class OnlyConnectModule : MonoBehaviour
         }
     }
 
-    private IEnumerator ConnectingWallBackgroundAnimation(Vector3 startPosition)
+    private IEnumerator ConnectingWallBackgroundAnimation()
     {
         yield return new WaitForSeconds(.25f);
         EgyptianHieroglyphsParent.SetActive(false);
