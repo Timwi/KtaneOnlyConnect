@@ -79,6 +79,7 @@ public class OnlyConnectModule : MonoBehaviour
         "DETECTIVES",
         "DICERS",
         "DISPARATES",
+        "DOUBLE-OH SEVENS",
         "DRAGONS",
         "DRAUGHTSMEN",
         "DURHAMITES",
