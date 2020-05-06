@@ -268,8 +268,11 @@ public class OnlyConnectModule : MonoBehaviour
     private int _round1Answer;
     private const int _wallSize = 3;
     private int[] _hieroglyphsDisplayed;
-    private KMSelectable[] _round2Buttons;
-    private char[] _round2Characters;
+    private Round2ButtonInfo[] _round2Buttons;  // Contains the order in which they are displayed.
+    private char[][] _round2Wall;   // Contains the correct groups, NOT the order in which they are displayed.
+    private List<char> _curSelectedGroup;
+    private int _numSolvedGroups;
+    private int _animating = 0;
 
     void Start()
     {
@@ -364,7 +367,7 @@ public class OnlyConnectModule : MonoBehaviour
             StartCoroutine(ConnectingWallBackgroundAnimation());
 
             retry:
-            var wall = new char[_wallSize][];
+            _round2Wall = new char[_wallSize][];
             var names = new string[_wallSize];
             var availableAlphabets = _alphabets.Select((abc, i) => new { Letters = new HashSet<char>(abc), Name = _alphabetNames[i] }).ToList();
 
@@ -373,13 +376,13 @@ public class OnlyConnectModule : MonoBehaviour
             {
                 var index = Rnd.Range(0, availableAlphabets.Count);
                 var alphabet = availableAlphabets[index].Letters;
-                wall[i] = alphabet.ToList().Shuffle().Take(_wallSize).ToArray();
+                _round2Wall[i] = alphabet.ToList().Shuffle().Take(_wallSize).ToArray();
                 names[i] = availableAlphabets[index].Name;
                 availableAlphabets.RemoveAt(index);
-                var others = availableAlphabets.Where(a => wall[i].All(a.Letters.Contains)).ToList();
+                var others = availableAlphabets.Where(a => _round2Wall[i].All(a.Letters.Contains)).ToList();
                 var allLetters = alphabet.Concat(others.SelectMany(o => o.Letters)).Distinct().ToArray();
                 foreach (var remaining in availableAlphabets)
-                    if (wall[i].Any(remaining.Letters.Contains))
+                    if (_round2Wall[i].Any(remaining.Letters.Contains))
                         foreach (var letter in allLetters)
                             remaining.Letters.Remove(letter);
                 availableAlphabets.RemoveAll(s => s.Letters.Count < _wallSize);
@@ -388,18 +391,18 @@ public class OnlyConnectModule : MonoBehaviour
             }
 
             // Make sure that the wall has a unique solution.
-            if (CheckWallUnique(wall.SelectMany(row => row).ToArray(), 0, 0, new Stack<string>(), Enumerable.Range(0, _alphabets.Length).ToDictionary(ix => _alphabetNames[ix], ix => new HashSet<char>(_alphabets[ix]))).Distinct().Skip(1).Any())
+            if (CheckWallUnique(_round2Wall.SelectMany(row => row).ToArray(), 0, 0, new Stack<string>(), Enumerable.Range(0, _alphabets.Length).ToDictionary(ix => _alphabetNames[ix], ix => new HashSet<char>(_alphabets[ix]))).Distinct().Skip(1).Any())
                 goto retry;
 
             Debug.LogFormat(@"[Only Connect #{0}] Connecting Wall solution:", _moduleId);
             for (int i = 0; i < _wallSize; i++)
-                Debug.LogFormat(@"[Only Connect #{0}] {1} ({2})", _moduleId, wall[i].JoinString(" "), names[i]);
+                Debug.LogFormat(@"[Only Connect #{0}] {1} ({2})", _moduleId, _round2Wall[i].JoinString(" "), names[i]);
 
-            var curSelectedGroup = new List<char>();
-            var numSolvedGroups = 0;
+            _curSelectedGroup = new List<char>();
+            _numSolvedGroups = 0;
 
-            var jumbledLetters = wall.SelectMany(row => row).ToList().Shuffle();
-            var buttons = Enumerable.Range(0, _wallSize * _wallSize).Select(i =>
+            var jumbledLetters = _round2Wall.SelectMany(row => row).ToList().Shuffle();
+            _round2Buttons = Enumerable.Range(0, _wallSize * _wallSize).Select(i =>
             {
                 var ch = jumbledLetters[i];
                 var btn = ConnectingWallParent.transform.Find(string.Format("Button #{0}", i + 1));
@@ -409,50 +412,47 @@ public class OnlyConnectModule : MonoBehaviour
                 var textMesh = btn.Find(string.Format("Button #{0} text", i + 1)).GetComponent<TextMesh>();
                 textMesh.text = jumbledLetters[i].ToString();
                 var sel = btn.GetComponent<KMSelectable>();
-                return new { Button = sel, Character = ch, Text = textMesh, Renderer = renderer };
+                return new Round2ButtonInfo { Button = sel, Character = ch, Text = textMesh, Renderer = renderer };
             }).ToArray();
 
-            _round2Buttons = buttons.Select(b => b.Button).ToArray();
-            _round2Characters = buttons.Select(b => b.Character).ToArray();
             StartCoroutine(MoveButtons(_round2Buttons, Enumerable.Range(0, _wallSize * _wallSize).ToArray(), _round2Buttons, randomUpPosition: true));
 
-            foreach (var inf_FE in buttons)
+            foreach (var inf in _round2Buttons)
             {
-                var inf = inf_FE;
                 inf.Button.OnInteract += delegate
                 {
                     inf.Button.AddInteractionPunch(1f);
-                    var btnIx = Array.IndexOf(buttons, inf);
-                    if (btnIx < _wallSize * numSolvedGroups || _isSolved)
+                    var btnIx = Array.IndexOf(_round2Buttons, inf);
+                    if (btnIx < _wallSize * _numSolvedGroups || _isSolved)
                         return false;
 
                     Audio.PlaySoundAtTransform("Click", inf.Button.transform);
 
-                    if (curSelectedGroup.Contains(inf.Character))
+                    if (_curSelectedGroup.Contains(inf.Character))
                     {
-                        curSelectedGroup.Remove(inf.Character);
+                        _curSelectedGroup.Remove(inf.Character);
                         inf.Renderer.material = ButtonBackground;
                         inf.Text.color = Color.black;
                     }
                     else
                     {
-                        curSelectedGroup.Add(inf.Character);
-                        inf.Renderer.material = ButtonSelected[numSolvedGroups];
+                        _curSelectedGroup.Add(inf.Character);
+                        inf.Renderer.material = ButtonSelected[_numSolvedGroups];
                         inf.Text.color = Color.white;
 
-                        if (curSelectedGroup.Count == _wallSize)
+                        if (_curSelectedGroup.Count == _wallSize)
                         {
-                            var correctGroup = Enumerable.Range(0, _wallSize).Select(ix => (int?) ix).FirstOrDefault(ix => !wall[ix.Value].Except(curSelectedGroup).Any() && !curSelectedGroup.Except(wall[ix.Value]).Any());
+                            var correctGroup = Enumerable.Range(0, _wallSize).Select(ix => (int?) ix).FirstOrDefault(ix => !_round2Wall[ix.Value].Except(_curSelectedGroup).Any() && !_curSelectedGroup.Except(_round2Wall[ix.Value]).Any());
                             if (correctGroup == null)
                             {
                                 // User selected a wrong group: give a strike and reset the selected buttons
-                                Debug.LogFormat(@"[Only Connect #{0}] Submitted incorrect group: {1}", _moduleId, curSelectedGroup.JoinString(" "));
+                                Debug.LogFormat(@"[Only Connect #{0}] Submitted incorrect group: {1}", _moduleId, _curSelectedGroup.JoinString(" "));
                                 Module.HandleStrike();
-                                var btns2 = buttons.Where(inf2 => curSelectedGroup.Contains(inf2.Character)).ToArray();
+                                var btns2 = _round2Buttons.Where(inf2 => _curSelectedGroup.Contains(inf2.Character)).ToArray();
                                 StartCoroutine(ResetButtons(delegate
                                 {
                                     foreach (var inf2 in btns2)
-                                        if (!curSelectedGroup.Contains(inf2.Character))
+                                        if (!_curSelectedGroup.Contains(inf2.Character))
                                         {
                                             inf2.Renderer.material = ButtonBackground;
                                             inf2.Text.color = Color.black;
@@ -462,36 +462,36 @@ public class OnlyConnectModule : MonoBehaviour
                             else
                             {
                                 // User selected a correct group
-                                Debug.LogFormat(@"[Only Connect #{0}] Submitted correct group: {1}", _moduleId, curSelectedGroup.JoinString(" "));
+                                Debug.LogFormat(@"[Only Connect #{0}] Submitted correct group: {1}", _moduleId, _curSelectedGroup.JoinString(" "));
 
                                 // Move the correct group to the top
                                 for (int i = 0; i < _wallSize; i++)
                                 {
-                                    var ix = buttons.IndexOf(b => b.Character == curSelectedGroup[i]);
-                                    var t = buttons[_wallSize * numSolvedGroups + i];
-                                    buttons[_wallSize * numSolvedGroups + i] = buttons[ix];
-                                    buttons[ix] = t;
+                                    var ix = _round2Buttons.IndexOf(b => b.Character == _curSelectedGroup[i]);
+                                    var t = _round2Buttons[_wallSize * _numSolvedGroups + i];
+                                    _round2Buttons[_wallSize * _numSolvedGroups + i] = _round2Buttons[ix];
+                                    _round2Buttons[ix] = t;
                                 }
-                                numSolvedGroups++;
+                                _numSolvedGroups++;
 
-                                if (numSolvedGroups == _wallSize - 1)
+                                if (_numSolvedGroups == _wallSize - 1)
                                 {
                                     for (int i = _wallSize * (_wallSize - 1); i < _wallSize * _wallSize; i++)
                                     {
-                                        buttons[i].Renderer.material = ButtonSelected[_wallSize - 1];
-                                        buttons[i].Text.color = Color.white;
+                                        _round2Buttons[i].Renderer.material = ButtonSelected[_wallSize - 1];
+                                        _round2Buttons[i].Text.color = Color.white;
                                     }
                                     _isSolved = true;
                                     Module.HandlePass();
-                                    numSolvedGroups++;
+                                    _numSolvedGroups++;
                                 }
 
-                                _round2Buttons = buttons.Select((b, i) => i >= _wallSize * numSolvedGroups ? b.Button : null).ToArray();
-                                _round2Characters = buttons.Select(b => b.Character).ToArray();
-
-                                StartCoroutine(MoveButtons(buttons.Select(b => b.Button).ToArray(), curSelectedGroup.Select(ch => buttons.IndexOf(b => b.Character == ch)).ToArray(), buttons.Select(b => b.Button).Skip(_wallSize * numSolvedGroups).ToArray()));
+                                StartCoroutine(MoveButtons(
+                                    _round2Buttons,
+                                    _curSelectedGroup.Select(ch => _round2Buttons.IndexOf(b => b.Character == ch)).ToArray(),
+                                    _round2Buttons.Skip(_wallSize * _numSolvedGroups).ToArray()));
                             }
-                            curSelectedGroup.Clear();
+                            _curSelectedGroup.Clear();
                         }
                     }
                     return false;
@@ -548,24 +548,27 @@ public class OnlyConnectModule : MonoBehaviour
 
     private IEnumerator ConnectingWallBackgroundAnimation()
     {
+        _animating++;
         yield return new WaitForSeconds(.25f);
         EgyptianHieroglyphsParent.SetActive(false);
         ComponentRenderer.material = ComponentBackgroundStage2;
+        _animating--;
     }
 
-    private IEnumerator MoveButtons(KMSelectable[] buttons, int[] mustMove, KMSelectable[] newChildren, bool randomUpPosition = false)
+    private IEnumerator MoveButtons(Round2ButtonInfo[] buttons, int[] mustMove, Round2ButtonInfo[] newChildren, bool randomUpPosition = false)
     {
+        _animating++;
         const float dx = .038f;
         const float dy = .024f;
         const float howFarUp = .02f;
 
         var infs = buttons.Select((b, i) =>
         {
-            var oldPos = b.transform.localPosition;
+            var oldPos = b.Button.transform.localPosition;
             var newPos = new Vector3(dx * (i % _wallSize) - dx, 0, dy * (-(i / _wallSize)) + dy);
             return new
             {
-                Button = b,
+                Info = b,
                 OldPos = oldPos,
                 OldPosUp = randomUpPosition ? new Vector3(Rnd.Range(-.04f, .04f), howFarUp, Rnd.Range(-.02f, .03f)) : mustMove.Contains(i) ? new Vector3(oldPos.x, howFarUp, oldPos.z) : new Vector3(oldPos.x, howFarUp / 2, oldPos.z),
                 NewPos = newPos,
@@ -583,11 +586,11 @@ public class OnlyConnectModule : MonoBehaviour
             elapsed += Time.deltaTime;
             foreach (var inf in infs)
                 if (inf.ShouldMove)
-                    inf.Button.transform.localPosition = Vector3.Lerp(inf.OldPos, inf.OldPosUp, Mathf.Min(1, elapsed / duration1));
+                    inf.Info.Button.transform.localPosition = Vector3.Lerp(inf.OldPos, inf.OldPosUp, Mathf.Min(1, elapsed / duration1));
         }
 
         yield return new WaitForSeconds(.15f);
-        Audio.PlaySoundAtTransform("Woosh", buttons[0].transform);
+        Audio.PlaySoundAtTransform("Woosh", buttons[0].Button.transform);
 
         // Move to final position
         const float duration2 = .6f;
@@ -598,15 +601,16 @@ public class OnlyConnectModule : MonoBehaviour
             elapsed += Time.deltaTime;
             foreach (var inf in infs)
                 if (inf.ShouldMove)
-                    inf.Button.transform.localPosition = Vector3.Lerp(inf.OldPosUp, inf.NewPos, Mathf.Min(1, elapsed / duration2));
+                    inf.Info.Button.transform.localPosition = Vector3.Lerp(inf.OldPosUp, inf.NewPos, Mathf.Min(1, elapsed / duration2));
         }
 
         foreach (var inf in infs)
             if (inf.ShouldMove)
-                inf.Button.transform.localPosition = inf.NewPos;
+                inf.Info.Button.transform.localPosition = inf.NewPos;
 
-        MainSelectable.Children = newChildren.Length == 0 ? new[] { EgyptianHieroglyphButtons[0] } : newChildren;
+        MainSelectable.Children = newChildren.Length == 0 ? new[] { EgyptianHieroglyphButtons[0] } : newChildren.Select(inf => inf.Button).ToArray();
         MainSelectable.UpdateChildren(newChildren.Length == 0 ? null : MainSelectable.Children[0]);
+        _animating--;
     }
 
 #pragma warning disable 414
@@ -652,23 +656,23 @@ public class OnlyConnectModule : MonoBehaviour
             {
                 int number;
                 if (int.TryParse(cmd, out number) && number >= 1 && number <= 9)
-                    btns.Add(_round2Buttons[number - 1]);
-                else if (cmd.Length == 1 && (number = Array.IndexOf(_round2Characters, cmd[0])) != -1)
-                    btns.Add(_round2Buttons[number]);
+                    btns.Add(_round2Buttons[number - 1].Button);
+                else if (cmd.Length == 1 && (number = _round2Buttons.IndexOf(inf => inf.Character == cmd[0])) != -1)
+                    btns.Add(_round2Buttons[number].Button);
                 else
                     switch (cmd.Replace("center", "middle").Replace("centre", "middle"))
                     {
-                        case "tl": case "lt": case "topleft": case "lefttop": case "1": btns.Add(_round2Buttons[0]); break;
-                        case "tm": case "tc": case "mt": case "ct": case "topmiddle": case "middletop": case "2": btns.Add(_round2Buttons[1]); break;
-                        case "tr": case "rt": case "topright": case "righttop": case "3": btns.Add(_round2Buttons[2]); break;
+                        case "tl": case "lt": case "topleft": case "lefttop": case "1": btns.Add(_round2Buttons[0].Button); break;
+                        case "tm": case "tc": case "mt": case "ct": case "topmiddle": case "middletop": case "2": btns.Add(_round2Buttons[1].Button); break;
+                        case "tr": case "rt": case "topright": case "righttop": case "3": btns.Add(_round2Buttons[2].Button); break;
 
-                        case "ml": case "cl": case "lm": case "lc": case "middleleft": case "leftmiddle": case "4": btns.Add(_round2Buttons[3]); break;
-                        case "mm": case "cm": case "mc": case "cc": case "middle": case "middlemiddle": case "5": btns.Add(_round2Buttons[4]); break;
-                        case "mr": case "cr": case "rm": case "rc": case "middleright": case "rightmiddle": case "6": btns.Add(_round2Buttons[5]); break;
+                        case "ml": case "cl": case "lm": case "lc": case "middleleft": case "leftmiddle": case "4": btns.Add(_round2Buttons[3].Button); break;
+                        case "mm": case "cm": case "mc": case "cc": case "middle": case "middlemiddle": case "5": btns.Add(_round2Buttons[4].Button); break;
+                        case "mr": case "cr": case "rm": case "rc": case "middleright": case "rightmiddle": case "6": btns.Add(_round2Buttons[5].Button); break;
 
-                        case "bl": case "lb": case "bottomleft": case "leftbottom": case "7": btns.Add(_round2Buttons[6]); break;
-                        case "bm": case "bc": case "mb": case "cb": case "bottommiddle": case "middlebottom": case "8": btns.Add(_round2Buttons[7]); break;
-                        case "br": case "rb": case "bottomright": case "rightbottom": case "9": btns.Add(_round2Buttons[8]); break;
+                        case "bl": case "lb": case "bottomleft": case "leftbottom": case "7": btns.Add(_round2Buttons[6].Button); break;
+                        case "bm": case "bc": case "mb": case "cb": case "bottommiddle": case "middlebottom": case "8": btns.Add(_round2Buttons[7].Button); break;
+                        case "br": case "rb": case "bottomright": case "rightbottom": case "9": btns.Add(_round2Buttons[8].Button); break;
 
                         default: return null;
                     }
@@ -679,6 +683,43 @@ public class OnlyConnectModule : MonoBehaviour
                 return null;
 
             return btns.ToArray();
+        }
+    }
+
+    IEnumerator TwitchHandleForcedSolve()
+    {
+        if (!_isRound2)
+        {
+            // Round 1: press the correct Egyptian hieroglyph
+            var ix = Array.IndexOf(_hieroglyphsDisplayed, _round1Answer);
+            EgyptianHieroglyphButtons[ix].OnInteract();
+            while (_animating > 0)
+                yield return true;
+        }
+
+        // If any buttons are already selected, deselect them
+        while (_curSelectedGroup.Count > 0)
+        {
+            _round2Buttons.FirstOrDefault(inf => inf.Character == _curSelectedGroup[0]).Button.OnInteract();
+            yield return new WaitForSeconds(.1f);
+        }
+
+        for (var i = 0; i < _wallSize; i++)
+        {
+            var btns = _round2Buttons.Where((inf, ix) => _round2Wall[i].Contains(inf.Character) && ix >= 3 * _numSolvedGroups).ToArray();
+            //Debug.LogFormat(@"Group: {0}; {1}; {2}", _round2Wall[i].JoinString(), btns.Length);
+            if (btns.Length == 0)
+                continue;
+            if (btns.Length != 3)
+                throw new Exception("There is a bug in the TP autosolve handler. Please contact Timwi.");
+            foreach (var btn in btns)
+            {
+                btn.Button.OnInteract();
+                yield return new WaitForSeconds(.1f);
+            }
+
+            while (_animating > 0)
+                yield return true;
         }
     }
 }
