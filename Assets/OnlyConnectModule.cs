@@ -237,7 +237,7 @@ public class OnlyConnectModule : MonoBehaviour
         "YORKERS"
     };
 
-    private static string[] _alphabets = {
+    private static readonly string[] _alphabets = {
         //!!
         "abcdefghijklmnopqrstuvxyzçë", // Albanian
         "abcdefghijklmnopqrstuvwxyzàçèéíïòóúü", // Catalan
@@ -257,13 +257,13 @@ public class OnlyConnectModule : MonoBehaviour
         "abcdefghijlmnopqrstuvxzàáâãçéêíóôõúü", // Portuguese
         "abcdefghijklmnopqrstuvwxyzâîășț", // Romanian
         "abcdefghijklmnopqrstuvwxyzáéíñóúü", // Spanish
-        "abcdefghijklmnoprstuvwxyäåö", // Swedish
+        "abcdefghijklmnopqrstuvwxyzäåö", // Swedish
         "abcdefghijklmnoprstuvyzçöüğış", // Turkish
         "abcdefghijlmnoprstuwyŵŷ", // Welsh
         //@@
     };
 
-    private static string[] _alphabetNames = {
+    private static readonly string[] _alphabetNames = {
         //##
         "Albanian",
         "Catalan",
