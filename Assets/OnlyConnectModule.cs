@@ -652,10 +652,10 @@ public class OnlyConnectModule : MonoBehaviour
         if (_isSolved)
             return null;
 
-        if (!command.StartsWith("press "))
+        var m = Regex.Match(command, @"^\s*(?:press\s+)?(.*)\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+        if (!m.Success)
             return null;
-
-        command = command.Substring(6).ToLowerInvariant();
+        command = m.Groups[1].Value.ToLowerInvariant();
 
         if (!_isRound2)
         {
