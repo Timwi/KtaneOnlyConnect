@@ -34,6 +34,7 @@ public class OnlyConnectModule : MonoBehaviour
 
     private static string[] _teams = {
         "ACCOUNTANTS",
+        "ALESMEN",
         "ANCIENT ALUMNI",
         "ANIMAL LOVERS",
         "APOLLOS",
@@ -252,7 +253,7 @@ public class OnlyConnectModule : MonoBehaviour
         "WORDSMITHS",
         "WRESTLERS",
         "WRIGHTS",
-        "YORKERS"
+        "YORKERS",
     };
 
     private static readonly string[] _alphabets = {
