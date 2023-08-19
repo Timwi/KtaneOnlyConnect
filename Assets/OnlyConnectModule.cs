@@ -33,6 +33,7 @@ public class OnlyConnectModule : MonoBehaviour
     public Material ComponentBackgroundStage2;
 
     private static string[] _teams = {
+        "ACADEMICALS",
         "ACCOUNTANTS",
         "ALESMEN",
         "ANALYSTS",
@@ -175,6 +176,7 @@ public class OnlyConnectModule : MonoBehaviour
         "INQUISITORS",
         "INSURERS",
         "IRREGULARS",
+        "ISOTOPES",
         "IT SPECIALISTS",
         "IT SUPPORTERS",
         "JILLIES",

@@ -13,6 +13,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   id: OnlyConnect
   title: Only Connect
+  author: Timwi
   description: "Hello and welcome to Only Connect \u2014 where everyone\u2019s very
     excited because we just had alphabetti-spaghetti in the canteen. Tasty [b]and[/b]
     an anagram! I actually wanted to make fish-fingers, but I only had one F.\n\nModule
