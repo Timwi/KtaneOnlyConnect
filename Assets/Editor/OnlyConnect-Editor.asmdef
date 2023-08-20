@@ -1,0 +1,10 @@
+{
+  "name": "OnlyConnect-Editor",
+  "references": [
+    "OnlyConnect"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "excludePlatforms": []
+}
